@@ -50,12 +50,19 @@
             background: rgba(139,92,246,0.2); color: var(--accent-purple); 
             border: 1px solid var(--accent-purple);
         }
-        .cart-btn { 
+        
+        /* 🔥 НОВЫЕ КНОПКИ: АВТОРИЗАЦИЯ + КОРЗИНА */
+        .cart-btn, .auth-btn { 
             background: rgba(16,185,129,0.2); color: var(--text-primary); 
             border: 1px solid var(--accent-emerald); padding: 0.8rem 1.5rem; 
             border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s; 
+            margin-left: 0.5rem;
         }
-        .cart-btn:hover { background: var(--accent-emerald); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .cart-btn:hover, .auth-btn:hover { 
+            background: var(--accent-emerald); transform: translateY(-2px); box-shadow: var(--shadow); 
+        }
+        .auth-btn { background: rgba(139,92,246,0.2); border-color: var(--accent-purple); }
+        .auth-btn:hover { background: var(--accent-purple); }
 
         .hero { 
             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); 
@@ -68,8 +75,8 @@
         .hero p { font-size: 1.3rem; max-width: 500px; margin: 0 auto 2.5rem; opacity: 0.95; }
         .cta { 
             background: var(--gradient-accent); color: #fff; padding: 1.2rem 3rem; 
-            border-radius: 50px; font-size: 1.2rem; font-weight: 700; text-decoration: none; 
-            display: inline-block; box-shadow: var(--shadow); transition: all 0.4s; cursor: pointer; border: none;
+            border-radius: 50px; font-size: 1.2rem; font-weight: 700; display: inline-block; 
+            box-shadow: var(--shadow); transition: all 0.4s; cursor: pointer; border: none;
         }
         .cta:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 30px 60px rgba(139,92,246,0.4); }
 
@@ -95,12 +102,14 @@
         .product-btn:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(139,92,246,0.4); }
         .product-btn.added { background: #10b981; }
 
-        .cart-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; }
-        .cart-modal.active { display: flex !important; align-items: center; justify-content: center; }
-        .cart-content { background: var(--bg-card); max-width: 500px; width: 90%; max-height: 90vh; border-radius: 24px; padding: 2.5rem; border: 1px solid var(--accent-purple); position: relative; animation: slideIn 0.4s ease; overflow-y: auto; }
+        /* 🔥 МОДАЛКИ: КОРЗИНА + РЕГИСТРАЦИЯ */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; }
+        .modal.active { display: flex !important; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg-card); max-width: 500px; width: 90%; max-height: 90vh; border-radius: 24px; padding: 2.5rem; border: 1px solid var(--accent-purple); position: relative; animation: slideIn 0.4s ease; overflow-y: auto; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(-50px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .close-cart { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 2rem; color: var(--text-secondary); cursor: pointer; font-weight: bold; }
-        .close-cart:hover { color: var(--text-primary); }
+        .close-modal { position: absolute; top: 1.5rem; right: 1.5rem; font-size: 2rem; color: var(--text-secondary); cursor: pointer; font-weight: bold; }
+        .close-modal:hover { color: var(--text-primary); }
+        
         .cart-item { display: flex; gap: 1rem; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
         .cart-item:last-child { border-bottom: none; }
         .cart-item-placeholder { width: 80px; height: 80px; background: #333; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #666; }
@@ -112,6 +121,11 @@
         .checkout-btn:hover:not(.loading):not(.success) { transform: scale(1.02); box-shadow: var(--shadow-hover); }
         .checkout-btn.loading { background: #666; cursor: wait; }
         .checkout-btn.success { background: var(--accent-emerald); }
+        
+        /* 🔥 РЕГИСТРАЦИЯ */
+        #phoneInput, #userAddress { width: 100%; padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1rem; }
+        #userBalance { color: var(--accent-emerald); font-weight: 700; }
+        #deliveryAddress { margin-top: 1rem; display: none; }
 
         .debug-info { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #10b981; padding: 10px; border-radius: 8px; font-size: 12px; z-index: 3000; display: none; max-width: 300px; word-wrap: break-word; }
 
@@ -120,7 +134,7 @@
             .nav-top { padding: 0.8rem 1rem; flex-wrap: wrap; }
             .hero { padding: 4rem 1rem 3rem; }
             .product { margin: 0 auto 1.5rem; padding: 1.8rem; max-width: 100%; }
-            .cart-content { margin: 1rem; width: calc(100% - 2rem); padding: 2rem; }
+            .modal-content { margin: 1rem; width: calc(100% - 2rem); padding: 2rem; }
         }
     </style>
 </head>
@@ -128,14 +142,16 @@
     <!-- Navigation -->
     <nav class="nav-container">
         <div class="nav-top">
-            <div class="logo" onclick="showCategory('all')" style="cursor:pointer">TechCase</div>
+            <div class="logo" onclick="showCategory('all')">TechCase</div>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <ul class="nav-links" id="navLinks">
+                <ul class="nav-links">
                     <li><a href="#" data-category="all" class="nav-link active" onclick="showCategory('all')">Все</a></li>
                     <li><a href="#" data-category="powerbank" class="nav-link" onclick="showCategory('powerbank')">🔋 Powerbank</a></li>
                     <li><a href="#" data-category="glass" class="nav-link" onclick="showCategory('glass')">📱 Стекла</a></li>
                     <li><a href="#" data-category="headphones" class="nav-link" onclick="showCategory('headphones')">🎧 Наушники</a></li>
                 </ul>
+                <!-- 🔥 КНОПКА ЛИЧНОГО КАБИНЕТА -->
+                <button class="auth-btn" id="authButton">👤 Войти</button>
                 <button class="cart-btn" onclick="toggleCart()" id="cartButton">
                     🛒 <span id="cartCount">0</span>
                 </button>
@@ -156,14 +172,14 @@
             <div class="category">
                 <h2>⭐ Популярные товары</h2>
                 <div class="product">
-                    <img src="https://images.unsplash.com/photo-1627918903947-3479c2be389e?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Powerbank HOCO" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='🔋 Powerbank'">
+                    <img src="https://images.unsplash.com/photo-1627918903947-3479c2be389e?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Powerbank" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='🔋'">
                     <h3>HOCO J141 Grace 10 000 mAh</h3>
                     <p class="product-desc">Сверхбыстрая зарядка PD 20W + QC 18W. Металлический корпус.</p>
                     <div class="product-price">2 499 ₽</div>
                     <button class="product-btn" onclick="addToCart('HOCO J141 Grace 10k mAh', 2499, this)">В корзину</button>
                 </div>
                 <div class="product">
-                    <img src="https://images.unsplash.com/photo-1572664983204-53f7e32045fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Защитное стекло" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='📱 Стекло'">
+                    <img src="https://images.unsplash.com/photo-1572664983204-53f7e32045fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Стекло" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='📱'">
                     <h3>Bro Glass OG iPhone 16 Pro Max</h3>
                     <p class="product-desc">Олеофобное покрытие 9H. Полное покрытие экрана.</p>
                     <div class="product-price">249 ₽</div>
@@ -176,7 +192,7 @@
             <div class="category">
                 <h2>🔋 Powerbank</h2>
                 <div class="product">
-                    <img src="https://images.unsplash.com/photo-1627918903947-3479c2be389e?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Powerbank HOCO" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='🔋 Powerbank'">
+                    <img src="https://images.unsplash.com/photo-1627918903947-3479c2be389e?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Powerbank" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='🔋'">
                     <h3>HOCO J141 Grace 10 000 mAh</h3>
                     <p class="product-desc">Сверхбыстрая зарядка PD 20W + QC 18W. Металлический корпус. Зарядка 3 устройств.</p>
                     <div class="product-price">2 499 ₽</div>
@@ -189,7 +205,7 @@
             <div class="category">
                 <h2>📱 Защитные стекла</h2>
                 <div class="product">
-                    <img src="https://images.unsplash.com/photo-1572664983204-53f7e32045fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Защитное стекло" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='📱 Стекло'">
+                    <img src="https://images.unsplash.com/photo-1572664983204-53f7e32045fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=420&h=240&q=80" alt="Стекло" class="product-image" onload="this.classList.remove('fallback')" onerror="this.classList.add('fallback');this.textContent='📱'">
                     <h3>Bro Glass OG iPhone 16 Pro Max</h3>
                     <p class="product-desc">Олеофобное покрытие 9H. Легко клеится без пузырей.</p>
                     <div class="product-price">249 ₽</div>
@@ -199,13 +215,33 @@
         </section>
     </div>
 
-    <!-- Cart Modal -->
-    <div class="cart-modal" id="cartModal">
-        <div class="cart-content">
-            <span class="close-cart" onclick="toggleCart()">×</span>
+    <!-- 🔥 МОДАЛКА РЕГИСТРАЦИИ -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleAuth()">×</span>
+            <h2>📱 Регистрация / Вход</h2>
+            <input type="tel" id="phoneInput" placeholder="+7 (999) 123-45-67">
+            <button class="checkout-btn" onclick="registerUser()">Зарегистрироваться</button>
+            <p style="text-align:center;color:var(--text-secondary);margin-top:1rem;font-size:0.9rem;">
+                Регистрируясь, вы соглашаетесь с условиями
+            </p>
+        </div>
+    </div>
+
+    <!-- 🔥 МОДАЛКА КОРЗИНЫ -->
+    <div class="modal" id="cartModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="toggleCart()">×</span>
             <h2>🛒 Ваша корзина</h2>
             <div id="cartItems"></div>
             <div class="cart-total" id="cartTotal">0 ₽</div>
+            
+            <div id="userInfo" style="display:none;margin-top:2rem;">
+                <h3 style="margin-bottom:1rem;color:var(--text-primary);">👤 Личный кабинет</h3>
+                <div id="authButton">👤 <span id="userBalance">0</span> баллов</div>
+                <input type="text" id="userAddress" placeholder="Ул. Ленина, 15 кв. 23">
+            </div>
+
             <div style="margin-top: 2rem;">
                 <h3 style="margin-bottom: 1rem; color: var(--text-primary);">💳 Оплата</h3>
                 <div class="payment-methods">
@@ -220,6 +256,9 @@
                     <div class="method-btn active" data-method="pickup">📦 Самовывоз</div>
                     <div class="method-btn" data-method="courier">🚚 Курьер (250₽)</div>
                 </div>
+                <div id="deliveryAddress">
+                    <input type="text" id="userAddress" placeholder="Ул. Ленина, 15 кв. 23">
+                </div>
             </div>
             <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">✅ Оформить заказ</button>
         </div>
@@ -228,66 +267,132 @@
     <!-- Debug info -->
     <div class="debug-info" id="debugInfo"></div>
 
-    <script>
-        // ✅ НАСТРОЙКИ БОТА - ТВОИ ДАННЫЕ
+    <script type="module">
+        // 🔥 ТВОЯ FIREBASE КОНФИГУРАЦИЯ
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAaffnDJMEUCZg3ShkElM43T49EArakj0g",
+            authDomain: "techcase-db.firebaseapp.com",
+            projectId: "techcase-db",
+            storageBucket: "techcase-db.firebasestorage.app",
+            messagingSenderId: "527907169282",
+            appId: "1:527907169282:web:07847bdbfdd8d05ec4731b",
+            measurementId: "G-CDY7FXV1WW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Telegram Bot
         const BOT_TOKEN = '8218055309:AAGmrClpyYnndkgniOlbi-C653g3s92Rb_A';
-        const YOUR_USER_ID = '1792273869'; // Твой Telegram ID
+        const YOUR_USER_ID = '1792273869';
         
         let cart = [];
+        let currentUser = null;
+        let userBalance = 0;
 
-        // Показать категорию
+        // 🔥 РЕГИСТРАЦИЯ ПО ТЕЛЕФОНУ
+        async function registerUser() {
+            const phoneInput = document.getElementById('phoneInput');
+            const phone = phoneInput.value.replace(/\D/g, '');
+            
+            if (phone.length < 10) {
+                showDebug('❌ Введите корректный номер телефона');
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, 'users', phone), {
+                    phone: phone,
+                    balance: 0,
+                    orders: 0,
+                    address: '',
+                    created: serverTimestamp()
+                });
+                
+                currentUser = phone;
+                await loadUserData(phone);
+                toggleAuth();
+                showDebug(`✅ Добро пожаловать, ${phone}`);
+            } catch (error) {
+                showDebug('❌ Ошибка: ' + error.message);
+            }
+        }
+
+        // 🔥 ЗАГРУЗКА ДАННЫХ ПОЛЬЗОВАТЕЛЯ
+        async function loadUserData(phone) {
+            try {
+                const userDoc = await getDoc(doc(db, 'users', phone));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    userBalance = data.balance || 0;
+                    document.getElementById('userBalance').textContent = userBalance;
+                    document.getElementById('authButton').innerHTML = `👤 ${phone.slice(-4)}<br><small>${userBalance} баллов</small>`;
+                    document.getElementById('userInfo').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+
+        // 🔥 КЭШБЭК 5%
+        async function addCashback(phone, total) {
+            if (!currentUser) return;
+            const cashback = Math.floor(total * 0.05);
+
+            try {
+                await updateDoc(doc(db, 'users', phone), {
+                    balance: increment(cashback),
+                    orders: increment(1)
+                });
+                userBalance += cashback;
+                document.getElementById('userBalance').textContent = userBalance;
+                showDebug(`💰 +${cashback} баллов кэшбэка!`);
+            } catch (error) {
+                console.error('Ошибка кэшбэка:', error);
+            }
+        }
+
+        // Остальные функции (без изменений)
         function showCategory(category) {
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             document.querySelector(`[data-category="${category}"]`)?.classList.add('active');
-            
             document.querySelectorAll('.category-section').forEach(section => {
                 section.classList.remove('active');
-                if (section.id === category || category === 'all') {
-                    section.classList.add('active');
-                }
+                if (section.id === category || category === 'all') section.classList.add('active');
             });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Добавить в корзину
         function addToCart(name, price, button) {
             cart.push({ id: Date.now(), name, price });
             updateCart();
-            
             const originalText = button.textContent;
             button.textContent = '✅ В корзине';
             button.classList.add('added');
-            
             setTimeout(() => {
                 button.textContent = originalText;
                 button.classList.remove('added');
             }, 2000);
         }
 
-        // Обновить корзину
         function updateCart() {
             document.getElementById('cartCount').textContent = cart.length;
             const total = cart.reduce((sum, item) => sum + item.price, 0);
             document.getElementById('cartTotal').textContent = total.toLocaleString() + ' ₽';
         }
 
-        // Показать/скрыть корзину
-        function toggleCart() {
-            const modal = document.getElementById('cartModal');
-            modal.classList.toggle('active');
-            if (modal.classList.contains('active')) {
-                renderCartItems();
-            }
-        }
+        function toggleCart() { document.getElementById('cartModal').classList.toggle('active'); renderCartItems(); }
+        function toggleAuth() { document.getElementById('authModal').classList.toggle('active'); }
 
-        // Рендер товаров в корзине
         function renderCartItems() {
             const container = document.getElementById('cartItems');
             if (cart.length === 0) {
                 container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem 0;">Корзина пуста 😢</p>';
                 return;
             }
-            
             container.innerHTML = cart.map((item, index) => `
                 <div class="cart-item">
                     <div class="cart-item-placeholder">📦</div>
@@ -300,22 +405,25 @@
             `).join('');
         }
 
-        // Удалить из корзины
         function removeFromCart(index) {
             cart.splice(index, 1);
             updateCart();
             renderCartItems();
         }
 
-        // ✅ ГЛАВНАЯ ФУНКЦИЯ - ОТПРАВКА ЗАКАЗА
+        // 🔥 ГЛАВНАЯ ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА
         async function checkout() {
-            const checkoutBtn = document.getElementById('checkoutBtn');
-            
+            if (!currentUser) {
+                alert('⚠️ Сначала зарегистрируйтесь!');
+                toggleAuth();
+                return;
+            }
             if (cart.length === 0) {
                 alert('Добавьте товары в корзину!');
                 return;
             }
 
+            const checkoutBtn = document.getElementById('checkoutBtn');
             const paymentEl = document.querySelector('.payment-methods .method-btn.active');
             const deliveryEl = document.querySelector('.delivery-methods .method-btn.active');
             
@@ -324,33 +432,33 @@
                 return;
             }
 
-            // Показать загрузку
             checkoutBtn.classList.add('loading');
             checkoutBtn.textContent = 'Отправка...';
-            
+
             const payment = paymentEl.dataset.method;
             const delivery = deliveryEl.dataset.method;
+            const address = document.getElementById('userAddress').value;
             const total = cart.reduce((sum, item) => sum + item.price, 0);
             const orderNumber = 'TC' + Date.now().toString().slice(-6);
             const time = new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Kaliningrad'});
 
             const orderText = `🚨 *НОВЫЙ ЗАКАЗ TechCase #${orderNumber}* 🚨
 
+👤 *Клиент:* ${currentUser}
+💰 *Баланс:* ${userBalance} баллов
+
 📦 *КОРЗИНА:*
-${cart.map(item => `• ${item.name.padEnd(30)} | ${item.price.toLocaleString()}₽`).join('\\n')}
+${cart.map(item => `• ${item.name.padEnd(30)} | ${item.price.toLocaleString()}₽`).join('\n')}
 
 💎 *СУММА:* ${total.toLocaleString()} ₽
 💳 *ОПЛАТА:* ${payment === 'card' ? '💳 Карта' : payment === 'cash' ? '💵 Наличные' : '💙 СБП'}
-🚚 *ДОСТАВКА:* ${delivery === 'pickup' ? '📦 Самовывоз' : '🚚 Курьер (250₽)'}
+🚚 *ДОСТАВКА:* ${delivery === 'pickup' ? '📦 Самовывоз' : `🚚 Курьер → ${address}`}
 📅 *ВРЕМЯ:* ${time}
 📍 *КАЛИНИНГРАД*
 
-👤 *Заказ с сайта*
-*ID:* ${orderNumber}
-
-*Статусы:*
-/take_${orderNumber} - Взял в работу
-/done_${orderNumber} - Выполнен ✅`;
+*Команды:*
+/take_${orderNumber}
+/done_${orderNumber}`;
 
             try {
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -367,59 +475,59 @@ ${cart.map(item => `• ${item.name.padEnd(30)} | ${item.price.toLocaleString()}
                 const result = await response.json();
                 
                 if (result.ok) {
-                    alert(`✅ Заказ #${orderNumber} отправлен вам в Telegram!`);
-                    showDebug(`✅ Заказ #${orderNumber} отправлен!`);
+                    await addCashback(currentUser, total);
+                    alert(`✅ Заказ #${orderNumber} отправлен! +${Math.floor(total*0.05)} баллов`);
                     cart = [];
                     toggleCart();
                     updateCart();
-                    checkoutBtn.classList.add('success');
-                    checkoutBtn.textContent = '✅ Отправлено!';
-                } else {
-                    throw new Error(result.description || 'Ошибка Telegram API');
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
-                showDebug(`❌ Ошибка: ${error.message}`);
-                alert(`❌ Ошибка отправки!\n\nПроверьте:\n1. Бот запущен (/start в ЛС)\n2. Токен: ${BOT_TOKEN.substring(0,10)}...\n3. Ваш ID: ${YOUR_USER_ID}\n\n${error.message}`);
+                showDebug(`❌ ${error.message}`);
+                alert('❌ Ошибка отправки: ' + error.message);
             } finally {
                 checkoutBtn.classList.remove('loading');
-                setTimeout(() => {
-                    checkoutBtn.classList.remove('success');
-                    checkoutBtn.textContent = '✅ Оформить заказ';
-                }, 3000);
+                checkoutBtn.textContent = '✅ Оформить заказ';
             }
         }
 
-        // Debug функция
         function showDebug(message) {
             const debug = document.getElementById('debugInfo');
             debug.textContent = message;
             debug.style.display = 'block';
-            setTimeout(() => {
-                debug.style.display = 'none';
-            }, 5000);
+            setTimeout(() => debug.style.display = 'none', 5000);
         }
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('authButton').addEventListener('click', toggleAuth);
+            
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('method-btn')) {
                     e.target.parentNode.querySelector('.active')?.classList.remove('active');
                     e.target.classList.add('active');
+                    if (e.target.dataset.method === 'courier') {
+                        document.getElementById('deliveryAddress').style.display = 'block';
+                    } else {
+                        document.getElementById('deliveryAddress').style.display = 'none';
+                    }
                 }
             });
 
-            document.getElementById('cartModal').addEventListener('click', function(e) {
-                if (e.target === e.currentTarget) toggleCart();
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === e.currentTarget) {
+                        modal.classList.remove('active');
+                    }
+                });
             });
 
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') toggleCart();
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal').forEach(modal => modal.classList.remove('active'));
+                }
             });
 
-            console.log('✅ TechCase полностью готов!');
-            console.log('🤖 Bot token:', BOT_TOKEN ? '✓ Загружен' : '✗ Ошибка');
-            console.log('👤 Ваш ID:', YOUR_USER_ID);
+            console.log('✅ TechCase с Firebase + Кэшбэк готов!');
         });
     </script>
 </body>
