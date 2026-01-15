@@ -141,14 +141,15 @@ main { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
         <div id="profileInfo" style="display:none; margin-top:1rem;">
             <p>Добро пожаловать, <span id="profileName"></span>!</p>
         </div>
+        <button onclick="sendVerificationCode()" style="margin-top:1rem;">Отправить код</button>
+        <button onclick="verifyCode()" style="margin-top:0.5rem;">Подтвердить код</button>
     </div>
 </div>
 
-<!-- Firebase и регистрация -->
+<!-- Firebase SDK и скрипты -->
 <script type="module">
-// Импорт Firebase SDK
+// Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
 import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -163,7 +164,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -171,43 +171,36 @@ window.confirmationResult = null;
 let currentUser = null;
 
 function initRecaptcha() {
-  window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
-  recaptchaVerifier.render();
+    window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
+    recaptchaVerifier.render();
 }
-
 window.addEventListener('load', () => {
-  showCategory('all', { currentTarget: document.querySelector('.nav-link.active') || document.querySelector('.nav-link') });
-  renderProducts();
-  updateCartUI();
-  loadUser();
-  initRecaptcha();
+    showCategory('all', { currentTarget: document.querySelector('.nav-link.active') || document.querySelector('.nav-link') });
+    renderProducts();
+    updateCartUI();
+    loadUser();
+    initRecaptcha();
 });
 
-// Категории и карточки (пример, добавьте остальные по аналогии)
+// Каталог товаров
 const products = {
     cases: [
-        { id: 1, name: "HOCO Чехол силиконовый", brand: "HOCO", desc: "Мягкий TPU, антискользящий, ударопрочный", price: 599, img: "https://images.unsplash.com/photo-1587563871167-29dce9c385aa?w=300" },
-        { id: 2, name: "Baseus Чехол магнитный", brand: "Baseus", desc: "MagSafe совместимый, карманы для карт", price: 1299, img: "https://images.unsplash.com/photo-1587563871167-29dce9c385aa?w=300" }
-        // добавьте остальные
+        { id: 1, name: "HOCO Чехол силиконовый", brand: "HOCO", desc: "Мягкий TPU, антискользящий, ударопрочный", price: 599, img: "https://images.unsplash.com/photo-1587563871167-29dce9c385aa?w=600" },
+        { id: 2, name: "Baseus Чехол магнитный", brand: "Baseus", desc: "MagSafe совместимый, карманы для карт", price: 1299, img: "https://images.unsplash.com/photo-1621475196808-0f2a0b2ec46e?w=600" }
     ],
     chargers: [
-        { id: 101, name: "HOCO J141 Grace 10000mAh", brand: "HOCO", desc: "PD 20W, QC 18W, 2 порта USB", price: 2499, img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=300" }
-        // остальные
+        { id: 101, name: "HOCO J141 Grace 10000mAh", brand: "HOCO", desc: "PD 20W, QC 18W, 2 порта USB", price: 2499, img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600" }
     ],
     protection: [
-        { id: 201, name: "Bro Glass 9H закаленное", brand: "Bro", desc: "Олеофобное покрытие, 0.33мм", price: 799, img: "https://images.unsplash.com/photo-1517433456452-df7d5ee2c675?w=300" }
-        // остальные
+        { id: 201, name: "Bro Glass 9H закаленное", brand: "Bro", desc: "Олеофобное покрытие, 0.33мм", price: 799, img: "https://images.unsplash.com/photo-1517433456452-df7d5ee2c675?w=600" }
     ],
     headphones: [
-        { id: 301, name: "Joyroom TWS Air", brand: "Joyroom", desc: "Bluetooth 5.3, 30ч автономии", price: 2999, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300" }
-        // остальные
+        { id: 301, name: "Joyroom TWS Air", brand: "Joyroom", desc: "Bluetooth 5.3, 30ч автономии", price: 2999, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600" }
     ],
     cables: [
-        { id: 401, name: "Baseus USB-C 1m 240W", brand: "Baseus", desc: "Плетеный, PD 240W, быстрая зарядка", price: 999, img: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=300" }
-        // остальные
+        { id: 401, name: "Baseus USB-C 1m 240W", brand: "Baseus", desc: "Плетеный, PD 240W, быстрая зарядка", price: 999, img: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=600" }
     ]
 };
-
 function showCategory(category, event) {
     document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
     event.currentTarget.classList.add('active');
@@ -224,7 +217,6 @@ function showCategory(category, event) {
         });
     }
 }
-
 function createProductCard(p) {
     const card = document.createElement('div');
     card.className = 'product';
@@ -238,29 +230,23 @@ function createProductCard(p) {
     `;
     return card;
 }
-
 function renderProducts() {
     showCategory('all', { currentTarget: document.querySelector('.nav-link.active') });
 }
-
 function addToCart(id) {
     const product = Object.values(products).flat().find(p => p.id === id);
     const item = cart.find(i => i.id === id);
-    if (item) { item.qty++; }
-    else { cart.push({ ...product, qty: 1 }); }
+    if (item) { item.qty++; } else { cart.push({ ...product, qty: 1 }); }
     localStorage.setItem('techcase_cart', JSON.stringify(cart));
     updateCartUI();
 }
-
 function updateCartUI() {
     document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
 }
-
 function toggleCart() {
     document.getElementById('cartModal').classList.toggle('active');
     renderCart();
 }
-
 function renderCart() {
     const el = document.getElementById('cartItems');
     const totalEl = document.getElementById('totalPrice');
@@ -282,7 +268,6 @@ function renderCart() {
     `).join('');
     totalEl.textContent = cart.reduce((s,i) => s + i.price * i.qty, 0);
 }
-
 function updateQty(id, qty) {
     qty = parseInt(qty);
     if (qty < 1) { removeFromCart(id); return; }
@@ -292,21 +277,14 @@ function updateQty(id, qty) {
     renderCart();
     updateCartUI();
 }
-
 function removeFromCart(id) {
     cart = cart.filter(i => i.id !== id);
     localStorage.setItem('techcase_cart', JSON.stringify(cart));
     renderCart();
     updateCartUI();
 }
-
-function toggleCheckout() {
-    document.getElementById('checkoutModal').classList.toggle('active');
-}
-
-function toggleAuth() {
-    document.getElementById('authModal').classList.toggle('active');
-}
+function toggleCheckout() { document.getElementById('checkoutModal').classList.toggle('active'); }
+function toggleAuth() { document.getElementById('authModal').classList.toggle('active'); }
 
 // Загрузка из localStorage
 let cart = JSON.parse(localStorage.getItem('techcase_cart')) || [];
@@ -321,7 +299,6 @@ function loadUser() {
         document.getElementById('profileInfo').style.display = 'block';
     }
 }
-
 // Отправка заказа
 async function sendOrder() {
     if (!currentUser) return alert('Зарегистрируйтесь или войдите!');
@@ -329,7 +306,6 @@ async function sendOrder() {
     const address = document.getElementById('deliveryAddressInput').value;
     const total = cart.reduce((s,i) => s + i.price * i.qty, 0);
     const itemsText = cart.map(i => `${i.name} x${i.qty} (${i.price}₽)`).join('\n');
-    // отправка через telegram или что нужно
     await setDoc(doc(db, 'orders', Date.now().toString()), {
         user: currentUser,
         items: itemsText,
@@ -345,7 +321,6 @@ async function sendOrder() {
     toggleCheckout();
     toggleCart();
 }
-
 // Регистрация по телефону
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -365,10 +340,20 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 window.confirmationResult = null;
+
 function initRecaptcha() {
     window.recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {}, auth);
     recaptchaVerifier.render();
 }
+
+window.addEventListener('load', () => {
+    showCategory('all', { currentTarget: document.querySelector('.nav-link.active') || document.querySelector('.nav-link') });
+    renderProducts();
+    updateCartUI();
+    loadUser();
+    initRecaptcha();
+});
+
 async function sendVerificationCode() {
     const phoneInput = document.getElementById('userPhone').value;
     const phone = '+7' + phoneInput.replace(/\D/g,'');
@@ -384,13 +369,12 @@ async function verifyCode() {
     try {
         await window.confirmationResult.confirm(code);
         alert('Вы успешно зарегистрированы!');
-        // Можно далее сохранять пользователя
     } catch (e) {
         alert('Ошибка подтверждения: '+ e.message);
     }
 }
 
-// Регистрация нового пользователя
+// Регистрация
 async function registerUser() {
     const name = document.getElementById('userName').value;
     const birthdate = document.getElementById('userBirthdate').value;
@@ -406,12 +390,10 @@ async function registerUser() {
     alert('Регистрация прошла успешно!');
 }
 
-// Открытие/закрытие модалок
+// Вспомогательные
 function toggleAuth() { document.getElementById('authModal').classList.toggle('active'); }
 function toggleCart() { document.getElementById('cartModal').classList.toggle('active'); renderCart(); }
 function toggleCheckout() { document.getElementById('checkoutModal').classList.toggle('active'); }
-
-// Загрузка пользователя из localStorage
 loadUser();
 
 </script>
